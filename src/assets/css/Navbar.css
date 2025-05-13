@@ -1,0 +1,287 @@
+/* Base Styles */
+.navbar {
+  margin: 1.5rem 2rem 0px 2rem;
+  top: 1.5rem;
+  background-color: #ffffff; /* White background */
+  padding: 1.8rem 1rem; 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  width: 95%;
+  top: 0;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  border-radius: 10px;
+  border-bottom: 2px solid #ff8c00; /* Orange accent border */
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+}
+
+.brand-large {
+  /* padding: 15px 0px 50px 0px; */
+  font-size: 2.4rem;
+  transition: all 0.3s ease;
+}
+
+.brand-large .paw-icon {
+  font-size: 1.8rem;
+  transition: all 0.3s ease;
+}
+
+.brand-small {
+  padding: 0.8rem 0; 
+  font-size: 1.5rem; 
+  transition: all 0.3s ease;
+}
+
+.brand-small .paw-icon {
+  font-size: 1.3rem;
+  transition: all 0.3s ease;
+}
+
+
+.navbar-shrink {
+  padding: 0.8rem 1rem;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+}
+
+/* Brand Styles */
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: bold;
+  color: #ff8c00; /* Black text */
+  text-shadow: none;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.paw-icon {
+  margin-right: 0.3rem;
+  color: #ff8c00; /* Orange icon */
+  transition: all 0.3s ease;
+}
+
+/* Navigation Links */
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0px 40px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.nav-item {
+  position: relative;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  text-decoration: none;
+  color: #000000; /* Black text */
+  font-weight: 600;
+  padding: 0.5rem 0.7rem;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1.2rem;
+  white-space: nowrap;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.dropdown-toggle {
+  /* padding-right: 1.5rem; */
+  position: relative;
+}
+
+.dropdown-icon {
+  font-size: 0.7rem;
+  margin-left: 0.2rem;
+  transition: transform 0.3s ease;
+  color: #000000; /* Black icon */
+}
+
+.dropdown.open .dropdown-icon {
+  transform: rotate(180deg);
+}
+
+.nav-link:hover, .nav-link:focus {
+  background-color: rgba(255, 140, 0, 0.1); /* Light orange hover */
+  color: #ff8c00; /* Orange text on hover */
+}
+
+.nav-icon {
+  font-size: 1rem;
+  color:black; /* Orange icons */
+}
+
+/* Dropdown styles */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff; /* White background */
+  border: 1px solid #ff8c00; /* Orange border */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  list-style: none;
+  padding: 0.5rem 0;
+  margin: 0.5rem 0 0 0;
+  min-width: 180px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.dropdown.open .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-menu li {
+  padding: 0;
+}
+
+.dropdown-menu a {
+  padding: 0.5rem 1rem;
+  display: block;
+  color: #000000; /* Black text */
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.dropdown-menu a:hover {
+  background-color: rgba(255, 140, 0, 0.1); /* Light orange hover */
+  color: #ff8c00; /* Orange text on hover */
+}
+
+.donate-btn {
+  background-color: #ff8c00; /* Orange button */
+  color: white !important;
+  padding: 0.5rem 0.8rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  border: 1px solid transparent;
+}
+
+.donate-btn:hover {
+  background-color: #e67300; /* Darker orange on hover */
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+/* Mobile Menu */
+.mobile-menu-btn {
+  display: none;
+  font-size: 1.5rem;
+  color: #000000; /* Black icon */
+  cursor: pointer;
+}
+
+.menu-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Responsive Design */
+@media (max-width: 1000px) {
+  .mobile-menu-btn {
+    display: block;
+  }
+  
+  .nav-links {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #ffffff; /* White background */
+    border: 1px solid #ff8c00; /* Orange border */
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.5rem;
+    gap: 0.2rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-20px);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .nav-links.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+  
+  .nav-link {
+    width: 100%;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+  }
+
+  .dropdown-menu {
+    position: static;
+    box-shadow: none;
+    margin: 0;
+    background-color: rgba(255, 140, 0, 0.05); /* Very light orange */
+    border: 1px solid rgba(255, 140, 0, 0.2); /* Light orange border */
+    border-radius: 8px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition: max-height 0.3s ease;
+  }
+  
+  .dropdown.open .dropdown-menu {
+    max-height: 500px;
+    padding: 0.5rem;
+    margin: 0.2rem 0;
+  }
+  
+  .dropdown-toggle {
+    justify-content: space-between;
+  }
+  
+  .dropdown-icon {
+    margin-left: auto;
+  }
+  
+  .nav-item, .dropdown {
+    width: 100%;
+  }
+  
+  /* Hide text for smaller screens */
+  @media (max-width: 400px) {
+    .navbar-brand .brand-name {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+/* Additional media query for very small screens */
+@media (max-width: 350px) {
+  .navbar-brand .brand-name {
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
