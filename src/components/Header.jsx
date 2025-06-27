@@ -23,10 +23,23 @@ const Navbar = () => {
     setIsOpen(!isOpen);
     // Close dropdowns when closing menu
     if (isOpen) setActiveDropdown(null);
+    
+    // Prevent body scroll when menu is open
+    if (!isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
   };
   
   const toggleDropdown = (name) => {
     setActiveDropdown(activeDropdown === name ? null : name);
+  };
+  
+  // Close the menu when a link is clicked
+  const handleLinkClick = () => {
+    setIsOpen(false);
+    document.body.style.overflow = 'auto';
   };
   
   return (
@@ -58,13 +71,13 @@ const Navbar = () => {
        
         <ul className={`nav-links ${isOpen ? 'active' : ''}`}>
           <li className="nav-item">
-            <a href="/" className="nav-link">
+            <a href="/" className="nav-link" onClick={handleLinkClick}>
               {/* <FaHome className="nav-icon" />  */}
               <span className="nav-text">Home</span>
             </a>
           </li>
           <li className="nav-item">
-            <a href="/about" className="nav-link">
+            <a href="/about" className="nav-link" onClick={handleLinkClick}>
               {/* <FaInfoCircle className="nav-icon" /> */}
                <span className="nav-text">About</span>
             </a>
@@ -81,15 +94,15 @@ const Navbar = () => {
               <FaChevronDown className="dropdown-icon" />
             </button>
             <ul className="dropdown-menu">
-              <li><a href="/services/adoption">Adoption</a></li>
-              <li><a href="/services/fostering">Fostering</a></li>
-              <li><a href="/services/veterinary">Veterinary Care</a></li>
-              <li><a href="/services/rescue">Rescue Operations</a></li>
+              <li><a href="/services/adoption" onClick={handleLinkClick}>Adoption</a></li>
+              <li><a href="/services/fostering" onClick={handleLinkClick}>Fostering</a></li>
+              <li><a href="/services/veterinary" onClick={handleLinkClick}>Veterinary Care</a></li>
+              <li><a href="/services/rescue" onClick={handleLinkClick}>Rescue Operations</a></li>
             </ul>
           </li>
           
           <li className="nav-item">
-            <a href="/facility" className="nav-link">
+            <a href="/facility" className="nav-link" onClick={handleLinkClick}>
               {/* <FaBuilding className="nav-icon" /> */}
                <span className="nav-text">Facility</span>
             </a>
@@ -106,21 +119,21 @@ const Navbar = () => {
               <FaChevronDown className="dropdown-icon" />
             </button>
             <ul className="dropdown-menu">
-              <li><a href="/gallery/photos">Photos</a></li>
-              <li><a href="/gallery/videos">Videos</a></li>
-              <li><a href="/gallery/success-stories">Success Stories</a></li>
+              <li><a href="/gallery/photos" onClick={handleLinkClick}>Photos</a></li>
+              <li><a href="/gallery/videos" onClick={handleLinkClick}>Videos</a></li>
+              <li><a href="/gallery/success-stories" onClick={handleLinkClick}>Success Stories</a></li>
             </ul>
           </li>
           
           <li className="nav-item">
-            <a href="/contact" className="nav-link">
+            <a href="/contact" className="nav-link" onClick={handleLinkClick}>
               {/* <FaEnvelope className="nav-icon" /> */}
                <span className="nav-text">Contact</span>
             </a>
           </li>
          
           <li className="nav-item">
-            <a href="/donate" className="nav-link donate-btn">
+            <a href="/donate" className="nav-link donate-btn" onClick={handleLinkClick}>
               <FaHandHoldingHeart className="nav-icon" /> <span className="nav-text">Donate</span>
             </a>
           </li>
