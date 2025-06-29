@@ -1,16 +1,13 @@
-
-
-
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import MedicineTable from './Table';
 
-import OrderTable from './OrderTable';
-
+// Import your components
+import MedicineTable from './Table'; // Adjust path as needed
+import OrderTable from './orderTable';
 
 
 export default function LabTabs() {
@@ -25,13 +22,17 @@ export default function LabTabs() {
       width: '100%', 
       typography: 'body1',
       bgcolor: '#0a0a0a', // Match your dark theme
-      minHeight: '100vh'
+      minHeight: '100vh',
+      
     }}>
       <TabContext value={value}>
         <Box sx={{ 
+          width:"25rem",
           borderBottom: 1, 
           borderColor: '#333', // Dark theme border
-          bgcolor: '#1a1a1a' // Dark background for tabs
+          bgcolor: '#1a1a1a', // Dark background for tabs
+          marginTop:"2rem",
+          marginLeft:"4.5rem"
         }}>
           <TabList 
             onChange={handleChange} 
@@ -54,7 +55,7 @@ export default function LabTabs() {
           </TabList>
         </Box>
         <TabPanel value="1" sx={{ p: 0 }}>
-          <MedicineTable/>
+          <MedicineTable />
         </TabPanel>
         <TabPanel value="2" sx={{ p: 0 }}>
           <OrderTable />

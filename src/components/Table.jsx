@@ -17,6 +17,8 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Pagination,
+  Stack,
 } from "@mui/material";
 import { Add, Remove, Sort } from "@mui/icons-material";
 import axios from "axios";
@@ -26,14 +28,14 @@ const MedicineTable = () => {
   const [sortedMedicines, setSortedMedicines] = useState([]);
   const [sortOption, setSortOption] = useState("");
   const [createdOrderId, setCreatedOrderId] = useState(null);
-
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   // Modal states
   const [open, setOpen] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState("");
   const [selectedItems, setSelectedItems] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [message, setMessage] = useState("");
-  
 
   // Static email list
   const availableEmails = [
@@ -44,7 +46,6 @@ const MedicineTable = () => {
     "maureen47@gmail.com",
   ];
 
- 
   const sortOptions = [
     { value: "name_asc", label: "📝 Alphabetical (A-Z)" },
     { value: "containerLabel_asc", label: "📦 Container (A-Z)" },
@@ -92,11 +93,26 @@ const MedicineTable = () => {
     return aNumber - bNumber;
   };
 
+  // Calculate pagination
+  const totalPages = Math.ceil(sortedMedicines.length / rowsPerPage);
+  const startIndex = (page - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const paginatedMedicines = sortedMedicines.slice(startIndex, endIndex);
+
+  // Pagination handlers
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(1); // Reset to first page when changing rows per page
+  };
   // Sorting function - FIXED: Proper field name handling
   const handleSortChange = (event) => {
     const selectedSort = event.target.value;
     setSortOption(selectedSort);
-
+    setPage(1);
     if (!selectedSort) {
       setSortedMedicines(medicines);
       return;
@@ -176,10 +192,12 @@ const MedicineTable = () => {
     axios
       .post("http://localhost:3000/api/orders/createOrders", order)
       .then((response) => {
-        const orderId= response.data.orderId
-        setCreatedOrderId(orderId)
-        console
-        setMessage(`✅ Order placed successfully with order id: ${createdOrderId}`);
+        const orderId = response.data.orderId;
+        setCreatedOrderId(orderId);
+        console;
+        setMessage(
+          `✅ Order placed successfully with order id: ${response.data.orderId}`
+        );
         setTimeout(() => {
           setMessage("");
           setSelectedEmail("");
@@ -220,8 +238,10 @@ const MedicineTable = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          mb: 3,
-          p: 3,
+          mb: 1,
+          p: 2,
+          mx: "auto",
+          width: 1200,
           bgcolor: "linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%)",
           borderRadius: 2,
           boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
@@ -238,147 +258,151 @@ const MedicineTable = () => {
         >
           💊 Medicine Inventory
         </Typography>
-        <Box style={{display:"flex",justifyContent:"center", maxHeight:"60px"
-        }}>
-        <Button
-          variant="contained"
-          onClick={() => setOpen(true)}
-          sx={{
-            background: "linear-gradient(45deg, #667eea 0%, #764ba2 100%)",
-            color: "white",
-            px: 4,
-            py: 1.5,
-            borderRadius: 3,
-            fontWeight: "bold",
-            fontSize: "1rem",
-            textTransform: "none",
-            boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
-            "&:hover": {
-              background: "linear-gradient(45deg, #5a67d8 0%, #6b46c1 100%)",
-              transform: "translateY(-2px)",
-              boxShadow: "0 6px 20px rgba(102, 126, 234, 0.6)",
-            },
-
-            transition: "all 0.3s ease",
+        <Box
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            maxHeight: "60px",
           }}
         >
-          🛒 Create Order
-        </Button>
-          {/* Sorting Controls */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          mb: 3,
-          px: 2,
-        }}
-      >
-        <FormControl
-          variant="outlined"
-          sx={{
-            minWidth: 200,
-            // minHeight:1,
-            backgroundColor: "#2a2a2a",
-
-            "& .MuiOutlinedInput-root": {
-              backgroundColor: "#2a2a2a",
-              color: "#ffffff",
-              "& fieldset": {
-                borderColor: "#555",
-              },
-              "&:hover fieldset": {
-                borderColor: "#667eea",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "#667eea",
-              },
-            },
-            "& .MuiInputLabel-root": {
-              color: "#b0b0b0",
-              "&.Mui-focused": {
-                color: "#667eea",
-              },
-            },
-            "& .MuiSelect-icon": {
-              color: "#b0b0b0",
-            },
-          }}
-        >
-          <InputLabel id="sort-select-label">
-            <Sort sx={{ mr: 1, fontSize: "1rem" }} />
-            Sort By
-          </InputLabel>
-          <Select
-            labelId="sort-select-label"
-            value={sortOption}
-            onChange={handleSortChange}
-            label="Sort By"
-            MenuProps={{
-              PaperProps: {
-                sx: {
-                  "& .MuiMenu-list": {
-                    paddingTop: "1rem",
-                    paddingBottom: "1rem",
-                    backgroundColor: "#2a2a2a",
-                  },
-                },
-              },
-            }}
+          <Button
+            variant="contained"
+            onClick={() => setOpen(true)}
             sx={{
-              backgroundColor: "black !important",
-              "& .MuiSelect-select": {
-                display: "flex",
-                alignItems: "center",
-                backgroundColor: "#2a2a2a",
+              background: "linear-gradient(45deg, #667eea 0%, #764ba2 100%)",
+              color: "white",
+              px: 4,
+              py: 1.5,
+              borderRadius: 3,
+              fontWeight: "bold",
+              fontSize: "1rem",
+              textTransform: "none",
+              // boxShadow: "0 4px 15px rgba(102, 126, 234, 0.2)",
+              "&:hover": {
+                background: "linear-gradient(45deg, #5a67d8 0%, #6b46c1 100%)",
+                transform: "translateY(-2px)",
+                // boxShadow: "0 6px 20px rgba(102, 126, 234, 0.3)",
               },
+
+              transition: "all 0.3s ease",
             }}
           >
-            <MenuItem
-              value=""
+            🛒 Create Order
+          </Button>
+          {/* Sorting Controls */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              mb: 3,
+              px: 2,
+            }}
+          >
+            <FormControl
+              variant="outlined"
               sx={{
+                minWidth: 200,
+                // minHeight:1,
                 backgroundColor: "#2a2a2a",
-                color: "#ffffff",
-                "&:hover": {
-                  backgroundColor: "#3a3a3a",
-                },
-                "&.Mui-selected": {
-                  backgroundColor: "#667eea",
-                  "&:hover": {
-                    backgroundColor: "#5a67d8",
+
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "#2a2a2a",
+                  color: "#ffffff",
+                  "& fieldset": {
+                    borderColor: "#555",
                   },
+                  "&:hover fieldset": {
+                    borderColor: "#667eea",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#667eea",
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  color: "#b0b0b0",
+                  "&.Mui-focused": {
+                    color: "#667eea",
+                  },
+                },
+                "& .MuiSelect-icon": {
+                  color: "#b0b0b0",
                 },
               }}
             >
-              🔄 Default Order
-            </MenuItem>
-            {sortOptions.map((option) => (
-              <MenuItem
-                key={option.value}
-                value={option.value}
-                sx={{
-                  backgroundColor: "#2a2a2a",
-                  color: "#ffffff",
-                  "&:hover": {
-                    backgroundColor: "#3a3a3a",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "#667eea",
-                    "&:hover": {
-                      backgroundColor: "#5a67d8",
+              <InputLabel id="sort-select-label">
+                <Sort sx={{ mr: 1, fontSize: "1rem" }} />
+                Sort By
+              </InputLabel>
+              <Select
+                labelId="sort-select-label"
+                value={sortOption}
+                onChange={handleSortChange}
+                label="Sort By"
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      "& .MuiMenu-list": {
+                        paddingTop: "1rem",
+                        paddingBottom: "1rem",
+                        backgroundColor: "#2a2a2a",
+                      },
                     },
                   },
                 }}
+                sx={{
+                  backgroundColor: "black !important",
+                  "& .MuiSelect-select": {
+                    display: "flex",
+                    alignItems: "center",
+                    backgroundColor: "#2a2a2a",
+                  },
+                }}
               >
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
-     </Box>
+                <MenuItem
+                  value=""
+                  sx={{
+                    backgroundColor: "#2a2a2a",
+                    color: "#ffffff",
+                    "&:hover": {
+                      backgroundColor: "#3a3a3a",
+                    },
+                    "&.Mui-selected": {
+                      backgroundColor: "#667eea",
+                      "&:hover": {
+                        backgroundColor: "#5a67d8",
+                      },
+                    },
+                  }}
+                >
+                  🔄 Default Order
+                </MenuItem>
+                {sortOptions.map((option) => (
+                  <MenuItem
+                    key={option.value}
+                    value={option.value}
+                    sx={{
+                      backgroundColor: "#2a2a2a",
+                      color: "#ffffff",
+                      "&:hover": {
+                        backgroundColor: "#3a3a3a",
+                      },
+                      "&.Mui-selected": {
+                        backgroundColor: "#667eea",
+                        "&:hover": {
+                          backgroundColor: "#5a67d8",
+                        },
+                      },
+                    }}
+                  >
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
       </Box>
 
-    
       {/* Table */}
       <TableContainer
         component={Paper}
@@ -442,11 +466,12 @@ const MedicineTable = () => {
           </TableHead>
           <TableBody>
             {Array.isArray(sortedMedicines) && sortedMedicines.length > 0 ? (
-              sortedMedicines.map((med, index) => (
+              paginatedMedicines.map((med, index) => (
                 <TableRow
-                  key={index}
+                  key={startIndex + index}
                   sx={{
-                    backgroundColor: index % 2 === 0 ? "#2a2a2a" : "#1f1f1f",
+                    backgroundColor:
+                      (startIndex + index) % 2 === 0 ? "#2a2a2a" : "#1f1f1f",
                     "&:hover": {
                       backgroundColor: "#3a3a3a",
                       // transform: "scale(1.005)",
@@ -498,6 +523,107 @@ const MedicineTable = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mt: 3,
+          p: 2,
+          bgcolor: "#1a1a1a",
+          borderRadius: 2,
+          border: "1px solid #333",
+        }}
+      >
+        {/* Rows per page selector */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Typography sx={{ color: "#b0b0b0", fontSize: "0.9rem" }}>
+            Rows per page:
+          </Typography>
+          <FormControl size="small">
+            <Select
+              value={rowsPerPage}
+              onChange={handleRowsPerPageChange}
+              sx={{
+                color: "#ffffff",
+                backgroundColor: "#2a2a2a",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#555",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#667eea",
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#667eea",
+                },
+                "& .MuiSelect-icon": {
+                  color: "#b0b0b0",
+                },
+              }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    backgroundColor: "#2a2a2a",
+                    "& .MuiMenuItem-root": {
+                      color: "#ffffff",
+                      "&:hover": {
+                        backgroundColor: "#3a3a3a",
+                      },
+                      "&.Mui-selected": {
+                        backgroundColor: "#667eea",
+                      },
+                    },
+                  },
+                },
+              }}
+            >
+              <MenuItem value={5}>5</MenuItem>
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={25}>25</MenuItem>
+              <MenuItem value={50}>50</MenuItem>
+              <MenuItem value={100}>100</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+
+        {/* Page info */}
+        <Typography sx={{ color: "#b0b0b0", fontSize: "0.9rem" }}>
+          Showing {startIndex + 1}-{Math.min(endIndex, sortedMedicines.length)}{" "}
+          of {sortedMedicines.length} entries
+        </Typography>
+
+        {/* Pagination component */}
+        <Stack spacing={2}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            size="medium"
+            sx={{
+              "& .MuiPaginationItem-root": {
+                color: "#b0b0b0",
+                borderColor: "#555",
+                "&:hover": {
+                  backgroundColor: "#3a3a3a",
+                  borderColor: "#667eea",
+                },
+                "&.Mui-selected": {
+                  backgroundColor: "#667eea",
+                  color: "#ffffff",
+                  "&:hover": {
+                    backgroundColor: "#5a67d8",
+                  },
+                },
+              },
+              "& .MuiPaginationItem-ellipsis": {
+                color: "#666",
+              },
+            }}
+          />
+        </Stack>
+      </Box>
 
       {/* Order Modal */}
       <Modal open={open} onClose={handleClose}>
@@ -663,7 +789,7 @@ const MedicineTable = () => {
                     },
                   }}
                 >
-                  {med.name} (ID: {med.id})
+                  {med.name} ({med.brand}) (ID: {med.id})
                 </MenuItem>
               ))}
             </TextField>
@@ -815,12 +941,12 @@ const MedicineTable = () => {
                 fontWeight: "bold",
                 textTransform: "none",
                 borderRadius: 2,
-                boxShadow: "0 4px 15px rgba(76, 175, 80, 0.4)",
+                // boxShadow: "0 4px 15px rgba(76, 175, 80, 0.2)",
                 "&:hover": {
                   background:
                     "linear-gradient(45deg, #45a049 0%, #388e3c 100%)",
                   transform: "translateY(-2px)",
-                  boxShadow: "0 6px 20px rgba(76, 175, 80, 0.6)",
+                  // boxShadow: "0 6px 20px rgba(76, 175, 80, 0.2)",
                 },
                 "&:disabled": {
                   background: "#333",
