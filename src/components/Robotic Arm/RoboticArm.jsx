@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, } from "@react-three/fiber";
 import { OrbitControls, Text, Html } from "@react-three/drei";
 import * as THREE from "three";
 
@@ -35,58 +35,63 @@ export function RoboticArm({ phase, position, onPhaseComplete, currentMedicine }
   const finalTargetPos = useRef(new THREE.Vector3());
   const intermediateTargetPos = useRef(new THREE.Vector3());
   const clawScale = useRef(1);
-
+const [currentOperation, setCurrentOperation] = useState({
+  phase: 'idle',
+  sourcePosition: null,
+  targetPosition: null,
+  medicine: null
+});
   const [movementSubPhase, setMovementSubPhase] = useState("idle");
 
   useEffect(() => {
     if (!armRef.current) return;
     currentArmPos.current.copy(armRef.current.position);
   }, []);
-
-  useEffect(() => {
-    if (phase === "idle") {
-      finalTargetPos.current.copy(new THREE.Vector3(0, basePosY, 0));
-      clawScale.current = 1;
-      setMovementSubPhase("moveX_return");
-    } else if (phase === "moveToPick" && position) {
-      finalTargetPos.current.set(position.x, pickDropY, position.z);
-      clawScale.current = 1;
-      intermediateTargetPos.current.set(
-        currentArmPos.current.x,
-        travelHeight,
-        currentArmPos.current.z
-      );
-      setMovementSubPhase("moveY_up");
-    } else if (phase === "lift" && position) {
+// Add this to your RoboticArm component's useEffect that handles phase changes
+useEffect(() => {
+  if (phase === "idle") {
+    finalTargetPos.current.copy(new THREE.Vector3(0, basePosY, 0));
+    clawScale.current = 1;
+    setMovementSubPhase("moveX_return");
+  } else if ((phase === "moveToPick" || phase === "moveToDrop") && position) {
+    // Handle both moveToPick and moveToDrop phases
+    const targetY = phase === "moveToPick" ? pickDropY : pickDropY;
+    finalTargetPos.current.set(position.x, targetY, position.z);
+    clawScale.current = phase === "moveToPick" ? 1 : 0.4; // Open for pick, closed for drop
+    intermediateTargetPos.current.set(
+      currentArmPos.current.x,
+      travelHeight,
+      currentArmPos.current.z
+    );
+    setMovementSubPhase("moveY_up");
+  } else if (phase === "lift") {
+    // Close claw and lift
+    if (position) {
       finalTargetPos.current.set(position.x, travelHeight, position.z);
-      clawScale.current = 0.4;
-      intermediateTargetPos.current.copy(finalTargetPos.current);
-      setMovementSubPhase("moveY");
-    } else if (phase === "moveToDrop" && position) {
-      finalTargetPos.current.set(position.x, travelHeight, position.z);
-      clawScale.current = 0.4;
-      intermediateTargetPos.current.set(
-        finalTargetPos.current.x,
-        travelHeight,
-        currentArmPos.current.z
-      );
-      setMovementSubPhase("moveX");
-    } else if (phase === "drop" && position) {
-      finalTargetPos.current.set(position.x, pickDropY, position.z);
-      clawScale.current = 1;
-      intermediateTargetPos.current.copy(finalTargetPos.current);
-      setMovementSubPhase("moveY");
-    } else if (phase === "return") {
-      finalTargetPos.current.copy(new THREE.Vector3(0, pickDropY, 0));
-      clawScale.current = 1;
-      intermediateTargetPos.current.set(
-        currentArmPos.current.x,
-        travelHeight,
-        currentArmPos.current.z
-      );
-      setMovementSubPhase("moveY_up");
     }
-  }, [phase, position]);
+    clawScale.current = 0.4; // Close claw
+    intermediateTargetPos.current.copy(finalTargetPos.current);
+    setMovementSubPhase("moveY");
+  } else if (phase === "drop") {
+    // Open claw and drop
+    if (position) {
+      finalTargetPos.current.set(position.x, pickDropY, position.z);
+    }
+    clawScale.current = 1; // Open claw
+    intermediateTargetPos.current.copy(finalTargetPos.current);
+    setMovementSubPhase("moveY");
+  } else if (phase === "return") {
+    finalTargetPos.current.copy(new THREE.Vector3(0, pickDropY, 0));
+    clawScale.current = 1;
+    intermediateTargetPos.current.set(
+      currentArmPos.current.x,
+      travelHeight,
+      currentArmPos.current.z
+    );
+    setMovementSubPhase("moveY_up");
+  }
+}, [phase, position]);
+
 
   useFrame(() => {
     if (!armRef.current || !clawRef.current) return;

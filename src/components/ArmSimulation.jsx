@@ -7,7 +7,7 @@ import { OrderItemsPanel } from "./Robotic Arm/OrderItemPanel";
 import { Tooltip } from "./Robotic Arm/ToolTip";
 import io from "socket.io-client";
 // Constants
-const GRID_SIZE = 5;
+const GRID_SIZE = 12;
 const GRID_SPACING = 1.5;
 const GRID_OFFSET = ((GRID_SIZE - 1) * GRID_SPACING) / 2;
 
@@ -40,25 +40,25 @@ function Box({
   const totalQuantity = medicines.reduce((sum, med) => sum + med.quantity, 0);
 
   // Get medicine names for display above container
-const getMedicineDisplayText = () => {
-  if (medicines.length === 0) return "";
+  const getMedicineDisplayText = () => {
+    if (medicines.length === 0) return "";
 
-  if (medicines.length === 1) {
-    // Single medicine type - only show name and brand
-    const med = medicines[0];
-    return `${med.name}\n(${med.brand})`;
-  } else if (medicines.length <= 3) {
-    // Few medicine types - show all names and brands only
-    return medicines.map((med) => `${med.name}\n(${med.brand})`).join("\n\n");
-  } else {
-    // Many medicine types - show first 2 + count
-    const firstTwo = medicines.slice(0, 2);
-    const remaining = medicines.length - 2;
-    return `${firstTwo
-      .map((med) => `${med.name}\n(${med.brand})`)
-      .join("\n\n")}\n\n+${remaining} more`;
-  }
-};
+    if (medicines.length === 1) {
+      // Single medicine type - only show name and brand
+      const med = medicines[0];
+      return `${med.name}\n(${med.brand})`;
+    } else if (medicines.length <= 3) {
+      // Few medicine types - show all names and brands only
+      return medicines.map((med) => `${med.name}\n(${med.brand})`).join("\n\n");
+    } else {
+      // Many medicine types - show first 2 + count
+      const firstTwo = medicines.slice(0, 2);
+      const remaining = medicines.length - 2;
+      return `${firstTwo
+        .map((med) => `${med.name}\n(${med.brand})`)
+        .join("\n\n")}\n\n+${remaining} more`;
+    }
+  };
 
   return (
     <group position={position}>
@@ -79,23 +79,23 @@ const getMedicineDisplayText = () => {
       </mesh>
 
       {/* Container Label on Front Edge */}
-      <Text
+      {/* <Text
         position={[0, 0.1, 0.51]}
         fontSize={0.18}
-        color="black"
+        color="white"
         anchorX="center"
         anchorY="middle"
         outlineWidth={0.002}
         outlineColor="white"
       >
         {boxId}
-      </Text>
+      </Text> */}
 
       {/* Medicine Names Above Container */}
       <Text
-        position={[0, 0.34, 0]} // Floating above the container
+        position={[0, 0.4, 0]} // Floating above the container
         fontSize={0.18}
-        color={medicines.length === 0 ? "#666666" : "#000000"}
+        color={medicines.length === 0 ? "white" : "white"}
         anchorX="center"
         anchorY="bottom"
         outlineWidth={0.003}
@@ -106,28 +106,6 @@ const getMedicineDisplayText = () => {
         {getMedicineDisplayText()}
       </Text>
 
-      {/* Quantity Badge */}
-      {/* {totalQuantity > 0 && (
-        <>
-          <mesh position={[0.4, 0.26, 0.4]}>
-            <cylinderGeometry args={[0.08, 0.08, 0.02, 16]} />
-            <meshBasicMaterial color="#4caf50" />
-          </mesh>
-        
-          <Text
-            position={[0.4, 0.27, 0.4]}
-            fontSize={0.06}
-            color="white"
-            anchorX="center"
-            anchorY="middle"
-            outlineWidth={0.001}
-            outlineColor="black"
-          >
-            {totalQuantity}
-          </Text>
-        </>
-      )} */}
-
       {/* Empty Status Indicator */}
       {totalQuantity === 0 && (
         <mesh position={[-0.4, 0.26, 0.4]}>
@@ -136,11 +114,13 @@ const getMedicineDisplayText = () => {
         </mesh>
       )}
       <Text
-        position={[0, 0.35, 0]}
-        fontSize={0.2}
-        color="black"
+        position={[0, 0.1, 0.51]}
+        fontSize={0.18}
+        color="white"
         anchorX="center"
         anchorY="middle"
+        outlineWidth={0.002}
+        outlineColor="white"
       >
         {label}
       </Text>
@@ -167,7 +147,6 @@ function MedicineItem({ position, medicine, isInMotion = false }) {
     </group>
   );
 }
-
 // Get color based on medicine name
 function getMedicineColor(medicineName) {
   const colors = [
@@ -187,7 +166,45 @@ function getMedicineColor(medicineName) {
 }
 
 export default function MedicineWarehouseSimulation() {
-  // Create grid of storage boxes
+  function CameraLogger() {
+    const { camera, controls } = useThree();
+
+    useEffect(() => {
+      const logCameraPosition = () => {
+        console.log("=== CAMERA POSITION ===");
+        console.log("Position:", [
+          parseFloat(camera.position.x.toFixed(2)),
+          parseFloat(camera.position.y.toFixed(2)),
+          parseFloat(camera.position.z.toFixed(2)),
+        ]);
+
+        console.log("Copy this line to your Canvas:");
+        console.log(
+          `camera={{ position: [${camera.position.x.toFixed(
+            2
+          )}, ${camera.position.y.toFixed(2)}, ${camera.position.z.toFixed(
+            2
+          )}], fov: ${camera.fov} }}`
+        );
+        console.log("========================");
+      };
+
+      const handleKeyPress = (event) => {
+        if (event.key.toLowerCase() === "l") {
+          logCameraPosition();
+        }
+      };
+
+      document.addEventListener("keydown", handleKeyPress);
+
+      return () => {
+        document.removeEventListener("keydown", handleKeyPress);
+      };
+    }, [camera, controls]);
+
+    return null;
+  }
+
   const storageBoxes = [];
   for (let x = 0; x < GRID_SIZE; x++) {
     for (let z = 0; z < GRID_SIZE; z++) {
@@ -232,7 +249,12 @@ export default function MedicineWarehouseSimulation() {
   const [tooltipMedicines, setTooltipMedicines] = useState([]);
   const [tooltipBoxId, setTooltipBoxId] = useState("");
   const [isManualProcessing, setIsManualProcessing] = useState(false);
-
+  const [instructions, setInstructions] = useState([]);
+  const [currentInstruction, setCurrentInstruction] = useState(null);
+  const [instructionMode, setInstructionMode] = useState(true);
+const [itemInTransit, setItemInTransit] = useState(null);
+const [transitStartPos, setTransitStartPos] = useState(null);
+const [transitEndPos, setTransitEndPos] = useState(null);
   useEffect(() => {
     const initialBoxContents = {};
     storageBoxes.forEach((box) => {
@@ -240,8 +262,12 @@ export default function MedicineWarehouseSimulation() {
     });
     setBoxContents(initialBoxContents);
   }, []);
+useEffect(() => {
+  console.log("DeliveredItems changed:", deliveredItems);
+  console.log("DeliveredItems length:", deliveredItems.length);
+}, [deliveredItems]);
   useEffect(() => {
-    const newSocket = io("http://localhost:3001"); // Your robot control server
+    const newSocket = io("http://localhost:3000");
 
     newSocket.on("connect", () => {
       setRobotConnected(true);
@@ -254,17 +280,40 @@ export default function MedicineWarehouseSimulation() {
       setRobotStatus("disconnected");
     });
 
-    // newSocket.on("robot_movement_complete", (data) => {
-    //   console.log("Robot completed movement:", data.phase);
-    //   // Trigger simulation phase completion when robot completes
-    //   if (data.phase === phase) {
-    //     handlePhaseComplete();
-    //   }
-    // });
     newSocket.on("robot_movement_complete", (data) => {
       console.log("Robot completed movement:", data.phase);
       // Always trigger phase completion when robot completes
       handlePhaseComplete();
+    });
+
+    newSocket.on("robot_instruction_complete", async (result) => {
+      console.log("Robot completed instruction:", result);
+
+      // Update instruction status in backend
+      try {
+        await fetch(
+          `http://localhost:3000/api/instructions/${result.instructionId}/status`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: result.status }),
+          }
+        );
+
+        // Update local state
+        setInstructions((prev) =>
+          prev.map((instr) =>
+            instr.id === result.instructionId
+              ? { ...instr, status: result.status }
+              : instr
+          )
+        );
+
+        // Process next instruction
+        processNextInstruction();
+      } catch (error) {
+        console.error("Error updating instruction status:", error);
+      }
     });
 
     newSocket.on("robot_status", (status) => {
@@ -275,6 +324,7 @@ export default function MedicineWarehouseSimulation() {
 
     return () => newSocket.close();
   }, []);
+
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
@@ -288,20 +338,22 @@ export default function MedicineWarehouseSimulation() {
           organizedBoxes[box.id] = [];
         });
 
-        // Then organize medicines into their designated containers
+        // Updated to handle new container structure
         data.medicines.forEach((medicine) => {
-          const boxId = medicine.containerLabel;
+          const boxId = medicine.container.label; // Changed from medicine.containerLabel
           if (organizedBoxes[boxId]) {
             organizedBoxes[boxId].push({
               ...medicine,
-              quantity: medicine.availableQuantity, // Use availableQuantity as quantity
+              quantity: medicine.availableQuantity,
+              containerLabel: medicine.container.label, // Add this for backward compatibility
             });
           } else {
             // If containerLabel doesn't exist, add it
             organizedBoxes[boxId] = [
               {
                 ...medicine,
-                quantity: medicine.availableQuantity, // Use availableQuantity as quantity
+                quantity: medicine.availableQuantity,
+                containerLabel: medicine.container.label, // Add this for backward compatibility
               },
             ];
           }
@@ -327,6 +379,423 @@ export default function MedicineWarehouseSimulation() {
 
     fetchMedicines();
   }, []);
+
+  const processInstructions = async (orderInstructions) => {
+    console.log("Setting instructions:", orderInstructions);
+    setInstructions(orderInstructions);
+
+    // Find and set the first pending instruction from the parameter (not state)
+    const firstInstruction = orderInstructions.find(
+      (instr) => instr.status === "pending"
+    );
+    if (firstInstruction) {
+      setCurrentInstruction(firstInstruction);
+      console.log("Starting first instruction:", firstInstruction);
+
+      // Start processing immediately using the parameter data
+      setTimeout(() => {
+        processNextInstructionWithData(orderInstructions);
+      }, 100);
+    }
+  };
+
+  // Modified function that takes instructions as parameter
+  const processNextInstructionWithData = (instructionsData) => {
+    console.log("processNextInstructionWithData called");
+    console.log("Current instructions data:", instructionsData);
+
+    const nextInstruction = instructionsData.find(
+      (instr) => instr.status === "pending"
+    );
+    console.log("Next instruction found:", nextInstruction);
+
+    if (!nextInstruction) {
+      setCurrentInstruction(null);
+      setStatus("All instructions completed!");
+      setPhase("idle");
+      return;
+    }
+
+    setCurrentInstruction(nextInstruction);
+    setStatus(
+      `Executing: ${nextInstruction.phase} - Step ${nextInstruction.stepNumber}`
+    );
+    console.log("Executing instruction:", nextInstruction);
+
+    // Extract position and medicine data from metadata
+    if (nextInstruction.metadata) {
+      if (nextInstruction.metadata.position) {
+        const pos = nextInstruction.metadata.position;
+        setCurrentTargetPos(new THREE.Vector3(pos.x, pos.y, pos.z));
+        console.log("Set target position:", pos);
+      }
+
+      if (nextInstruction.metadata.medicine) {
+        setCurrentMedicine(nextInstruction.metadata.medicine);
+        console.log("Set current medicine:", nextInstruction.metadata.medicine);
+      }
+
+      if (nextInstruction.metadata.orderItem) {
+        setCurrentOrderItem(nextInstruction.metadata.orderItem);
+        console.log(
+          "Set current order item:",
+          nextInstruction.metadata.orderItem
+        );
+      }
+    }
+
+    // Map instruction phases to your existing robotic arm phases
+    const phaseMapping = {
+      moveToPick: "moveToPick",
+      clawClose: "lift",
+      moveToDrop: "moveToDrop",
+      clawOpen: "drop",
+      return: "return",
+    };
+
+    const mappedPhase =
+      phaseMapping[nextInstruction.phase] || nextInstruction.phase;
+    console.log("Mapped phase:", mappedPhase);
+
+    // Mark instruction as in progress
+    setInstructions((prev) =>
+      prev.map((instr) =>
+        instr.id === nextInstruction.id
+          ? { ...instr, status: "in_progress" }
+          : instr
+      )
+    );
+
+    // Update the phase to trigger robotic arm movement
+    setPhase(mappedPhase);
+    console.log("Set phase to:", mappedPhase);
+  };
+
+  // Keep the original processNextInstruction for state-based calls
+  const processNextInstruction = () => {
+    console.log("processNextInstruction called");
+    console.log("Current instructions:", instructions);
+
+    const nextInstruction = instructions.find(
+      (instr) => instr.status === "pending"
+    );
+    console.log("Next instruction found:", nextInstruction);
+
+    if (!nextInstruction) {
+      setCurrentInstruction(null);
+      setStatus("All instructions completed!");
+      setPhase("idle");
+      return;
+    }
+
+    setCurrentInstruction(nextInstruction);
+    setStatus(
+      `Executing: ${nextInstruction.phase} - Step ${nextInstruction.stepNumber}`
+    );
+    console.log("Executing instruction:", nextInstruction);
+
+    // Extract position and medicine data from metadata
+    if (nextInstruction.metadata) {
+      if (nextInstruction.metadata.position) {
+        const pos = nextInstruction.metadata.position;
+        setCurrentTargetPos(new THREE.Vector3(pos.x, pos.y, pos.z));
+        console.log("Set target position:", pos);
+      }
+
+      if (nextInstruction.metadata.medicine) {
+        // Ensure medicine has all required fields
+        const medicine = {
+          ...nextInstruction.metadata.medicine,
+          id:
+            nextInstruction.metadata.medicine.id ||
+            `${nextInstruction.metadata.medicine.name}-${Date.now()}`,
+          quantity: 1,
+        };
+        setCurrentMedicine(medicine);
+        console.log("Set current medicine:", medicine);
+      }
+
+      if (nextInstruction.metadata.orderItem) {
+        setCurrentOrderItem(nextInstruction.metadata.orderItem);
+        console.log(
+          "Set current order item:",
+          nextInstruction.metadata.orderItem
+        );
+      }
+    }
+    // Map instruction phases to your existing robotic arm phases
+    const phaseMapping = {
+      moveToPick: "moveToPick",
+      clawClose: "lift",
+      moveToDrop: "moveToDrop",
+      clawOpen: "drop",
+      return: "return",
+    };
+
+    const mappedPhase =
+      phaseMapping[nextInstruction.phase] || nextInstruction.phase;
+    console.log("Mapped phase:", mappedPhase);
+
+    // Mark instruction as in progress
+    setInstructions((prev) =>
+      prev.map((instr) =>
+        instr.id === nextInstruction.id
+          ? { ...instr, status: "in_progress" }
+          : instr
+      )
+    );
+
+    // Update the phase to trigger robotic arm movement
+    setPhase(mappedPhase);
+    console.log("Set phase to:", mappedPhase);
+  };
+// Replace your handlePhaseComplete function with this fixed version:
+const handlePhaseComplete = () => {
+  console.log("handlePhaseComplete called, phase:", phase);
+
+  // Send robot command if connected (existing code)
+  if (socket && robotConnected && syncMode) {
+    const robotCommand = {
+      phase: phase,
+      targetPosition: currentTargetPos
+        ? {
+            x: currentTargetPos.x,
+            y: currentTargetPos.y,
+            z: currentTargetPos.z,
+          }
+        : null,
+      medicine: currentMedicine
+        ? {
+            name: currentMedicine.name,
+            brand: currentMedicine.brand,
+            containerLabel: currentMedicine.containerLabel,
+          }
+        : null,
+      orderItem: currentOrderItem
+        ? {
+            containerLabel: currentOrderItem.containerLabel,
+            medicineName: currentOrderItem.medicineName,
+            brand: currentOrderItem.brand,
+          }
+        : null,
+      timestamp: new Date().toISOString(),
+    };
+
+    socket.emit("execute_movement", robotCommand);
+  }
+
+  // If we're in instruction mode, handle instruction completion
+  if (instructionMode && currentInstruction) {
+    console.log("Completing instruction:", currentInstruction.id);
+
+    // Handle medicine delivery for drop phase
+    if (phase === "drop" && currentMedicine && currentOrderItem) {
+      const wasCorrectMedicine = scanAndMatchMedicine(
+        currentMedicine,
+        currentOrderItem
+      );
+
+      if (wasCorrectMedicine) {
+        // Add to delivered items with proper structure
+        const deliveredItem = {
+          ...currentMedicine,
+          id: currentMedicine.id || `${currentMedicine.name}-${Date.now()}`,
+          name: currentMedicine.name,
+          brand: currentMedicine.brand,
+          containerLabel: currentMedicine.containerLabel,
+          quantity: 1,
+          uniqueId: `delivered-${currentMedicine.id}-${Date.now()}`,
+        };
+        
+        setDeliveredItems((prev) => {
+          console.log("Adding to delivered items:", deliveredItem);
+          console.log("Previous delivered items:", prev);
+          const newItems = [...prev, deliveredItem];
+          console.log("New delivered items:", newItems);
+          return newItems;
+        });
+        
+        setStatus("Medicine delivered to order tray.");
+      } else {
+        // Add to dumped items with proper structure
+        const dumpedItem = {
+          ...currentMedicine,
+          id: currentMedicine.id || `${currentMedicine.name}-${Date.now()}`,
+          name: currentMedicine.name,
+          brand: currentMedicine.brand,
+          containerLabel: currentMedicine.containerLabel,
+          quantity: 1,
+          uniqueId: `dumped-${currentMedicine.id}-${Date.now()}`,
+        };
+        
+        setDumpedItems((prev) => [...prev, dumpedItem]);
+        setStatus("Incorrect medicine dumped.");
+      }
+
+      // Update box contents (decrease quantity)
+      setBoxContents((prev) => {
+        const newContents = { ...prev };
+        const targetBoxId = currentOrderItem.containerLabel;
+
+        if (newContents[targetBoxId]) {
+          newContents[targetBoxId] = newContents[targetBoxId]
+            .map((medicine) => {
+              if (
+                medicine.name === currentMedicine.name &&
+                medicine.brand === currentMedicine.brand
+              ) {
+                return { ...medicine, quantity: medicine.quantity - 1 };
+              }
+              return medicine;
+            })
+            .filter((medicine) => medicine.quantity > 0);
+        }
+        return newContents;
+      });
+
+      setCurrentMedicine(null);
+    }
+
+    // Mark current instruction as completed
+    setInstructions((prev) =>
+      prev.map((instr) =>
+        instr.id === currentInstruction.id
+          ? { ...instr, status: "completed" }
+          : instr
+      )
+    );
+
+    // Update instruction status in backend
+    updateInstructionStatus(currentInstruction.id, "completed");
+
+    // Process next instruction after a short delay
+    setTimeout(() => {
+      processNextInstruction();
+    }, 500);
+
+    return; // IMPORTANT: Return here to prevent the original phase handling
+  }
+
+  // Original phase handling logic (for non-instruction mode)
+  switch (phase) {
+    case "moveToPick":
+      setStatus("Scanning medicine...");
+      setPhase("lift");
+      break;
+    case "lift":
+      const isCorrectMedicine = scanAndMatchMedicine(
+        currentMedicine,
+        currentOrderItem
+      );
+
+      if (isCorrectMedicine) {
+        setStatus(
+          `Correct medicine scanned: ${currentMedicine.name} (${currentMedicine.brand}). Moving to order tray.`
+        );
+        setCurrentTargetPos(
+          new THREE.Vector3(orderTray.position[0], 0, orderTray.position[2])
+        );
+      } else {
+        setStatus(
+          `Incorrect medicine scanned: ${currentMedicine.name} (${currentMedicine.brand}). Moving to dump tray.`
+        );
+        setCurrentTargetPos(
+          new THREE.Vector3(dumpTray.position[0], 0, dumpTray.position[2])
+        );
+      }
+
+      setPhase("moveToDrop");
+      break;
+    case "moveToDrop":
+      setPhase("drop");
+      break;
+    case "drop":
+      const wasCorrectMedicine = scanAndMatchMedicine(
+        currentMedicine,
+        currentOrderItem
+      );
+
+      if (wasCorrectMedicine) {
+        // Add to delivered items with a unique ID
+        const deliveredItem = {
+          ...currentMedicine,
+          uniqueId: `${currentMedicine.id}-${Date.now()}`,
+        };
+        
+        setDeliveredItems((prev) => {
+          console.log("Legacy mode: Adding to delivered items:", deliveredItem);
+          const newItems = [...prev, deliveredItem];
+          console.log("Legacy mode: New delivered items:", newItems);
+          return newItems;
+        });
+        
+        setStatus("Medicine delivered to order tray.");
+      } else {
+        // Add to dumped items with a unique ID
+        setDumpedItems((prev) => [
+          ...prev,
+          {
+            ...currentMedicine,
+            uniqueId: `${currentMedicine.id}-${Date.now()}`,
+          },
+        ]);
+        setStatus("Incorrect medicine dumped.");
+      }
+
+      // Update box contents (decrease quantity)
+      setBoxContents((prev) => {
+        const newContents = { ...prev };
+        const targetBoxId = currentOrderItem.containerLabel;
+
+        if (newContents[targetBoxId]) {
+          newContents[targetBoxId] = newContents[targetBoxId]
+            .map((medicine) => {
+              if (
+                medicine.name === currentMedicine.name &&
+                medicine.brand === currentMedicine.brand
+              ) {
+                return { ...medicine, quantity: medicine.quantity - 1 };
+              }
+              return medicine;
+            })
+            .filter((medicine) => medicine.quantity > 0);
+        }
+        return newContents;
+      });
+
+      setCurrentMedicine(null);
+      setPhase("return");
+      break;
+    case "return":
+      if (orderQueue.length === 0) {
+        setTimeout(() => processNextOrderItem(), 500);
+        setPhase("idle");
+      } else {
+        setTimeout(() => processNextOrderItem(), 500);
+      }
+      break;
+    default:
+      break;
+  }
+};
+
+  // Add this helper function to update instruction status in backend
+  const updateInstructionStatus = async (instructionId, status) => {
+    try {
+      await fetch(
+        `http://localhost:3000/api/instructions/${instructionId}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        }
+      );
+    } catch (error) {
+      console.error("Error updating instruction status:", error);
+    }
+  };
+  // Process next pending instruction
+
   const handleManualProcessOrder = async () => {
     setIsManualProcessing(true);
     await processOrder();
@@ -358,7 +827,29 @@ export default function MedicineWarehouseSimulation() {
   useEffect(() => {
     console.log("Phase changed to:", phase);
   }, [phase]);
-  // Replace the processOrder function with this fixed version
+
+  const convertInstructionsToLegacyFormat = (instructions) => {
+    const legacyItems = [];
+
+    // Group instructions by medicine/container
+    const pickInstructions = instructions.filter(
+      (instr) => instr.phase === "moveToPick"
+    );
+
+    pickInstructions.forEach((instruction) => {
+      if (instruction.metadata && instruction.metadata.medicine) {
+        const medicine = instruction.metadata.medicine;
+        legacyItems.push({
+          medicineName: medicine.name,
+          brand: medicine.brand,
+          containerLabel: medicine.containerLabel,
+          quantity: 1, // Each instruction processes one item
+        });
+      }
+    });
+
+    return legacyItems;
+  };
   const processOrder = async () => {
     if (!orderId || isProcessing) return;
     if (orderTimer) {
@@ -366,9 +857,12 @@ export default function MedicineWarehouseSimulation() {
       setOrderTimer(null);
     }
     setIsProcessing(true);
+
     try {
       setStatus(`Processing order ${orderId}...`);
-      const response = await fetch(
+
+      // Step 1: Process the order to generate instructions
+      const processResponse = await fetch(
         `http://localhost:3000/api/orders/orders/${orderId}/process`,
         {
           method: "POST",
@@ -377,61 +871,108 @@ export default function MedicineWarehouseSimulation() {
           },
         }
       );
-      const data = await response.json();
+      const processData = await processResponse.json();
 
-      if (data.status === "processed" && data.items) {
-        setStatus(`Order #${data.orderId} processed and ready for pickup`);
-        setCurrentOrder({
-          id: data.orderId,
-          status: data.status,
-          processedAt: data.processedAt,
-          items: data.items,
-        });
+      console.log("Process Order Response:", processData);
 
-        // Create order queue from processed order items
-        const newOrderQueue = [];
-        data.items.forEach((item) => {
-          for (let i = 0; i < item.quantity; i++) {
-            newOrderQueue.push({
-              containerLabel: item.containerLabel,
-              medicineName: item.medicineName,
-              brand: item.brand,
-              orderItemId: item.orderItemId,
-              scannerCode: item.scannerCodes[i], // Each item gets its unique scanner code
-            });
+      if (processData && processData.orderId) {
+        setStatus(
+          `Order #${processData.orderId} processed. ${processData.instructionCount} instructions generated.`
+        );
+
+        // Step 2: Fetch the generated instructions
+        const instructionsResponse = await fetch(
+          `http://localhost:3000/api/instructions/order/${processData.orderId}`
+        );
+        const instructionsData = await instructionsResponse.json();
+
+        console.log("Instructions Response:", instructionsData);
+
+        if (
+          instructionsData &&
+          instructionsData.instructions &&
+          instructionsData.instructions.length > 0
+        ) {
+          setCurrentOrder({
+            id: processData.orderId,
+            status: "processing",
+            processedAt: new Date().toISOString(),
+            instructionCount: processData.instructionCount,
+            items: [],
+          });
+
+          // Check if instruction mode is enabled
+          if (instructionMode) {
+            // Use new instruction-based processing
+            console.log("Using instruction-based processing mode");
+            await processInstructions(instructionsData.instructions);
+          } else {
+            // Convert instructions to legacy format and use old processing
+            console.log("Converting instructions to legacy format");
+            const legacyOrderItems = convertInstructionsToLegacyFormat(
+              instructionsData.instructions
+            );
+            setOrderQueue(legacyOrderItems);
+            setStatus(
+              `Order #${processData.orderId} queued. ${legacyOrderItems.length} items to process.`
+            );
+            setTimeout(() => processFirstOrderItem(legacyOrderItems), 1000);
           }
-        });
-
-        // Reset states first
-        setDeliveredItems([]);
-        setDumpedItems([]);
-
-        // Set order queue and process first item in the same callback
-        setOrderQueue(newOrderQueue);
-
-        // Use setTimeout to ensure state has been updated
-        setTimeout(() => {
-          if (newOrderQueue.length > 0) {
-            processFirstOrderItem(newOrderQueue);
-          }
-        }, 100);
+        } else {
+          setStatus("No instructions found for this order");
+        }
       } else {
-        setStatus(`Failed to process order ${orderId} or order not found`);
+        console.log("Failed to process order:", processData);
+        setStatus(
+          `Failed to process order ${orderId}: ${
+            processData.message || "Unknown error"
+          }`
+        );
       }
     } catch (error) {
       console.error("Error processing order:", error);
-      setStatus("Error processing order");
+      setStatus(`Error processing order: ${error.message}`);
     } finally {
       setIsProcessing(false);
     }
   };
+  // Add this function to mark order as processed when all items are collected
+  const markOrderAsProcessed = async (orderId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/orders/orders/${orderId}/process`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      const data = await response.json();
+      console.log("Order marked as processed:", data);
+      setStatus(`Order #${orderId} completed and marked as processed!`);
+    } catch (error) {
+      console.error("Error marking order as processed:", error);
+      setStatus("Error marking order as processed");
+    }
+  };
 
-  // Add this new helper function
+  // 2. Update processFirstOrderItem function to add debugging:
   const processFirstOrderItem = (queue) => {
+    console.log("processFirstOrderItem called with queue:", queue);
+
     if (queue.length > 0) {
       const nextItem = queue[0];
+      console.log("Processing next item:", nextItem);
+
       const targetBox = storageBoxes.find(
         (box) => box.id === nextItem.containerLabel
+      );
+
+      console.log("Target box found:", targetBox);
+      console.log(
+        "Box contents for",
+        nextItem.containerLabel,
+        ":",
+        boxContents[targetBox?.id]
       );
 
       if (
@@ -441,14 +982,23 @@ export default function MedicineWarehouseSimulation() {
       ) {
         // Find the medicine that matches the order item
         const matchingMedicineIndex = boxContents[targetBox.id].findIndex(
-          (medicine) =>
-            medicine.name === nextItem.medicineName &&
-            medicine.brand === nextItem.brand &&
-            medicine.quantity > 0
+          (medicine) => {
+            const matches =
+              medicine.name === nextItem.medicineName &&
+              medicine.brand === nextItem.brand &&
+              medicine.quantity > 0;
+            console.log(
+              `Checking medicine: ${medicine.name} (${medicine.brand}) - matches: ${matches}`
+            );
+            return matches;
+          }
         );
+
+        console.log("Matching medicine index:", matchingMedicineIndex);
 
         if (matchingMedicineIndex !== -1) {
           const medicine = boxContents[targetBox.id][matchingMedicineIndex];
+          console.log("Found matching medicine:", medicine);
 
           // Create a copy for processing
           const medicineForProcessing = { ...medicine };
@@ -463,8 +1013,13 @@ export default function MedicineWarehouseSimulation() {
           setStatus(
             `Moving to container ${targetBox.id} for ${nextItem.medicineName} (${nextItem.brand}) - ${medicine.quantity} available`
           );
+
+          console.log("Setting phase to moveToPick");
           setPhase("moveToPick");
         } else {
+          console.log(
+            `No matching medicines available in container ${nextItem.containerLabel}`
+          );
           setStatus(
             `No matching medicines available in container ${nextItem.containerLabel} for ${nextItem.medicineName} (${nextItem.brand})`
           );
@@ -472,12 +1027,18 @@ export default function MedicineWarehouseSimulation() {
           setTimeout(() => processNextOrderItem(), 1000);
         }
       } else {
+        console.log(
+          `Container ${nextItem.containerLabel} is empty or not found`
+        );
         setStatus(`Container ${nextItem.containerLabel} is empty`);
         setOrderQueue((prev) => prev.slice(1));
         setTimeout(() => processNextOrderItem(), 1000);
       }
+    } else {
+      console.log("Queue is empty");
     }
   };
+
   // Simulate scanning and matching medicine
   const scanAndMatchMedicine = (medicine, expectedItem) => {
     return (
@@ -486,142 +1047,6 @@ export default function MedicineWarehouseSimulation() {
     );
   };
 
-  // Handle phase completion
-  const handlePhaseComplete = () => {
-    if (socket && robotConnected && syncMode) {
-      const robotCommand = {
-        phase: phase,
-        targetPosition: currentTargetPos
-          ? {
-              x: currentTargetPos.x,
-              y: currentTargetPos.y,
-              z: currentTargetPos.z,
-            }
-          : null,
-        medicine: currentMedicine
-          ? {
-              name: currentMedicine.name,
-              brand: currentMedicine.brand,
-              containerLabel: currentMedicine.containerLabel,
-            }
-          : null,
-        orderItem: currentOrderItem
-          ? {
-              containerLabel: currentOrderItem.containerLabel,
-              medicineName: currentOrderItem.medicineName,
-              brand: currentOrderItem.brand,
-            }
-          : null,
-        timestamp: new Date().toISOString(),
-      };
-
-      socket.emit("execute_movement", robotCommand);
-    }
-    switch (phase) {
-      case "moveToPick":
-        setStatus("Scanning medicine...");
-        setPhase("lift");
-        break;
-      case "lift":
-        const isCorrectMedicine = scanAndMatchMedicine(
-          currentMedicine,
-          currentOrderItem
-        );
-
-        if (isCorrectMedicine) {
-          setStatus(
-            `Correct medicine scanned: ${currentMedicine.name} (${currentMedicine.brand}). Moving to order tray.`
-          );
-          setCurrentTargetPos(
-            new THREE.Vector3(orderTray.position[0], 0, orderTray.position[2])
-          );
-        } else {
-          setStatus(
-            `Incorrect medicine scanned: ${currentMedicine.name} (${currentMedicine.brand}). Moving to dump tray.`
-          );
-          setCurrentTargetPos(
-            new THREE.Vector3(dumpTray.position[0], 0, dumpTray.position[2])
-          );
-        }
-
-        setPhase("moveToDrop");
-        break;
-      case "moveToDrop":
-        setPhase("drop");
-        break;
-      case "drop":
-        const wasCorrectMedicine = scanAndMatchMedicine(
-          currentMedicine,
-          currentOrderItem
-        );
-
-        if (wasCorrectMedicine) {
-          setDeliveredItems((prev) => [...prev, currentMedicine]);
-          setStatus("Medicine delivered to order tray.");
-
-          // Decrease quantity in the container
-          setBoxContents((prev) => {
-            const newContents = { ...prev };
-            const targetBoxId = currentOrderItem.containerLabel;
-
-            if (newContents[targetBoxId]) {
-              newContents[targetBoxId] = newContents[targetBoxId]
-                .map((medicine) => {
-                  if (
-                    medicine.name === currentMedicine.name &&
-                    medicine.brand === currentMedicine.brand
-                  ) {
-                    return { ...medicine, quantity: medicine.quantity - 1 };
-                  }
-                  return medicine;
-                })
-                .filter((medicine) => medicine.quantity > 0); // Remove medicines with 0 quantity
-            }
-
-            return newContents;
-          });
-        } else {
-          setDumpedItems((prev) => [...prev, currentMedicine]);
-          setStatus("Incorrect medicine dumped.");
-
-          // Still decrease quantity even if dumped (medicine was taken from container)
-          setBoxContents((prev) => {
-            const newContents = { ...prev };
-            const targetBoxId = currentOrderItem.containerLabel;
-
-            if (newContents[targetBoxId]) {
-              newContents[targetBoxId] = newContents[targetBoxId]
-                .map((medicine) => {
-                  if (
-                    medicine.name === currentMedicine.name &&
-                    medicine.brand === currentMedicine.brand
-                  ) {
-                    return { ...medicine, quantity: medicine.quantity - 1 };
-                  }
-                  return medicine;
-                })
-                .filter((medicine) => medicine.quantity > 0);
-            }
-
-            return newContents;
-          });
-        }
-        setCurrentMedicine(null);
-        setPhase("return");
-        break;
-      case "return":
-        if (orderQueue.length === 0) {
-          setTimeout(() => processNextOrderItem(), 500);
-          setPhase("idle");
-        } else {
-          // Directly process next item without returning to original position
-          setTimeout(() => processNextOrderItem(), 500);
-        }
-        break;
-      default:
-        break;
-    }
-  };
   // Process the next item in the order
   const processNextOrderItem = () => {
     if (orderQueue.length > 0) {
@@ -852,6 +1277,58 @@ export default function MedicineWarehouseSimulation() {
               Running in simulation-only mode
             </div>
           )}
+          {/* Add this toggle in your Robot Control Panel, after the existing content */}
+          <div className="flex items-center mb-2">
+            <input
+              type="checkbox"
+              id="instructionMode"
+              checked={instructionMode}
+              onChange={(e) => setInstructionMode(e.target.checked)}
+              className="mr-2"
+            />
+            <label htmlFor="instructionMode" className="text-xs">
+              Use Instruction Mode
+            </label>
+          </div>
+
+          {/* Add instruction status display */}
+          {instructionMode && currentInstruction && (
+            <div className="mt-2 p-2 bg-gray-700 rounded">
+              <div className="text-xs text-yellow-400">
+                Current Instruction:
+              </div>
+              <div className="text-xs text-white">
+                {currentInstruction.action}
+              </div>
+              <div className="text-xs text-gray-300">
+                {currentInstruction.description}
+              </div>
+            </div>
+          )}
+
+          {/* Show instruction progress */}
+          {instructionMode && instructions.length > 0 && (
+            <div className="mt-2">
+              <div className="text-xs text-white">
+                Progress:{" "}
+                {instructions.filter((i) => i.status === "completed").length}/
+                {instructions.length}
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
+                <div
+                  className="bg-blue-600 h-1.5 rounded-full"
+                  style={{
+                    width: `${
+                      (instructions.filter((i) => i.status === "completed")
+                        .length /
+                        instructions.length) *
+                      100
+                    }%`,
+                  }}
+                ></div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <OrderItemsPanel
@@ -863,11 +1340,11 @@ export default function MedicineWarehouseSimulation() {
       />
 
       <Canvas
-        camera={{ position: [15, 15, 15], fov: 50 }}
+        camera={{ position: [5.81, 2.66, 9.48], fov: 50}}
         shadows
         className="w-full h-screen"
       >
-        <color attach="background" args={["#f0f0f0"]} />
+        <color attach="background" args={["seashell"]} />
         <ambientLight intensity={0.6} />
         <directionalLight
           position={[10, 10, 5]}
@@ -881,20 +1358,20 @@ export default function MedicineWarehouseSimulation() {
           shadow-camera-bottom={-10}
         />
         <OrbitControls />
+        <CameraLogger />
 
-        {/* Ground */}
         <mesh
           rotation={[-Math.PI / 2, 0, 0]}
           position={[0, -0.05, 0]}
           receiveShadow
         >
           <planeGeometry args={[50, 50]} />
-          <meshStandardMaterial color="#e0e0e0" />
+          <meshStandardMaterial color="black" />
         </mesh>
 
         {/* Grid lines */}
         <gridHelper
-          args={[50, 50, "#999999", "#dddddd"]}
+          args={[50, 50, "#999999", "darkgray"]}
           position={[0, 0.01, 0]}
         />
 
@@ -945,12 +1422,13 @@ export default function MedicineWarehouseSimulation() {
         ))}
 
         {/* Delivered medicines in order tray */}
+        {console.log("Delivered items:", deliveredItems)}
         {deliveredItems.map((medicine, index) => {
           const offsetX = (index % 4) * 0.5 - 0.75;
           const offsetZ = Math.floor(index / 4) * 0.5 - 0.25;
           return (
             <MedicineItem
-              key={`delivered-${medicine.id}-${index}`}
+              key={`delivered-${medicine.uniqueId || index}`}
               position={[
                 orderTray.position[0] + offsetX,
                 0.3,
@@ -967,7 +1445,7 @@ export default function MedicineWarehouseSimulation() {
           const offsetZ = Math.floor(index / 4) * 0.5 - 0.25;
           return (
             <MedicineItem
-              key={`dumped-${medicine.id}-${index}`}
+              key={`dumped-${medicine.uniqueId || index}`}
               position={[
                 dumpTray.position[0] + offsetX,
                 0.3,
@@ -993,4 +1471,30 @@ export default function MedicineWarehouseSimulation() {
       </Canvas>
     </div>
   );
+}
+
+{
+  /* Quantity Badge */
+}
+{
+  /* {totalQuantity > 0 && (
+        <>
+          <mesh position={[0.4, 0.26, 0.4]}>
+            <cylinderGeometry args={[0.08, 0.08, 0.02, 16]} />
+            <meshBasicMaterial color="#4caf50" />
+          </mesh>
+        
+          <Text
+            position={[0.4, 0.27, 0.4]}
+            fontSize={0.06}
+            color="white"
+            anchorX="center"
+            anchorY="middle"
+            outlineWidth={0.001}
+            outlineColor="black"
+          >
+            {totalQuantity}
+          </Text>
+        </>
+      )} */
 }

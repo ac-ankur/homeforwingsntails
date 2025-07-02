@@ -39,7 +39,7 @@ const MedicineTable = () => {
 
   // Static email list
   const availableEmails = [
-    "shania.white96@yahoo.com",
+    "admin@example.com",
     "ruthie59@hotmail.com",
     "maximillia54@hotmail.com",
     "orie_reynolds@gmail.com",
