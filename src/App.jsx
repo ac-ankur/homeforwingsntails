@@ -21,11 +21,11 @@ function App() {
       <Router>
         {/* <Navbar /> */}
         <Routes>
-          <Route path="/" element={<Home />} />
+          {/* <Route path="/" element={<Home />} /> */}
           <Route path="/imagegallery" element={<ImageGallery />} />
           <Route path="/stack" element={<DiagonalCardStack/>} />
           <Route path="/room" element={<MultiRobotRoom/>} />
-          <Route path="/armsimulation" element={<ArmSimulation/>} />
+          <Route path="/" element={<ArmSimulation/>} />
           <Route path="/warehousesimulation" element={<WarehouseSimulation/>} />
           {/* <Route path="/table" element={<MedicineTable/>} /> */}
           <Route path="/practice" element={<Practice/>} />
